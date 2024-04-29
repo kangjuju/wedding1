@@ -300,6 +300,67 @@
     </div>
 </div>
 </div>
+<h1>방명록</h1>
+    <form id="guestbookForm">
+        <label for="name">이름:</label><br>
+        <input type="text" id="name" name="name"><br>
+        <label for="email">이메일:</label><br>
+        <input type="email" id="email" name="email"><br>
+        <label for="message">메시지:</label><br>
+        <textarea id="message" name="message"></textarea><br>
+        <button type="submit">작성하기</button>
+    </form>
+
+    <div id="entries"></div>
+
+    <script>
+        async function getGuestbookEntries() {
+            const response = await fetch('/guestbook');
+            const entries = await response.json();
+            return entries;
+        }
+
+        async function displayGuestbookEntries() {
+            const entries = await getGuestbookEntries();
+            const entriesContainer = document.getElementById('entries');
+            entriesContainer.innerHTML = '';
+
+            entries.forEach(entry => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <p><strong>${entry.name}</strong> (${entry.email})</p>
+                    <p>${entry.message}</p>
+                    <p>${new Date(entry.createdAt).toLocaleString()}</p>
+                    <hr>
+                `;
+                entriesContainer.appendChild(div);
+            });
+        }
+
+        async function submitGuestbookEntry(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const response = await fetch('/guestbook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            if (response.ok) {
+                form.reset();
+                displayGuestbookEntries();
+            } else {
+                alert("방명록을 작성할 수 없습니다.");
+            }
+        }
+
+        document.getElementById('guestbookForm').addEventListener('submit', submitGuestbookEntry);
+        displayGuestbookEntries();
+    </script>
+
+
 
 <footer></footer>
 <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
